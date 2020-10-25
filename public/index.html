@@ -1,0 +1,149 @@
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <style>
+            form {
+                display: flex;
+                justify-content: center;
+                justify-items: center;
+            }
+
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            th,
+            td {
+                text-align: left;
+                padding: 8px;
+            }
+
+            tr:nth-child(even) {
+                background-color: #f2f2f2
+            }
+
+            th {
+                background-color: #4CAF50;
+                color: white;
+            }
+
+            .delete_profile {
+                color: red;
+                cursor: pointer;
+            }
+
+            .edit_profile {
+                cursor: pointer;
+                color: rgb(72, 203, 255);
+            }
+
+            .editBtn,
+            input[name="id"] {
+                display: none;
+                color: rgb(26, 174, 243);
+
+            }
+        </style>
+    </head>
+
+    <body>
+        <form action="" id="myform">
+            <input type="text" placeholder="username" name="username" value="">
+            <input type="password" placeholder="password" name="password" value="">
+            <input type="text" placeholder="id" name="id" value="">
+            <button type="submit" value="submit" class="btn">Submit</button>
+            <button type="submit" value="submit" class="btn editBtn">Save</button>
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Password</th>
+                    <th>Profile</th>
+                    <th>Delete Profile</th>
+                    <th>Edit Profile</th>
+                </tr>
+            </thead>
+            <tbody id="usersList">
+
+            </tbody>
+
+        </table>
+        <script>
+
+            $(document).ready(function () {
+                buildPage();
+            })
+
+            $(document).on('click', '.delete_profile', function () {
+                var parseUserData = $(this).parent().parent().attr('user');
+                var userData = JSON.parse(decodeURIComponent(parseUserData));
+                $.ajax({
+                    url: '/users/' + userData.id,
+                    type: 'DELETE',
+                    success: function (rep) {
+                        buildPage();
+                    }
+                })
+            })
+
+            $(document).on('click', '.edit_profile', function () {
+
+                var parseUserData = $(this).parent().parent().attr('user');
+                var userData = JSON.parse(decodeURIComponent(parseUserData));
+                $('.editBtn').show();
+                $('input[name="id"]').show();
+                $('input[name="id"]').val(userData.id);
+                $('input[name="username"]').val(userData.username);
+                $('input[name="password"]').val(userData.password);
+            })
+            $('.editBtn').click(function () {
+                var id = $('input[name="id"]').val();
+                $.ajax({
+                url: '/users/' +id
+                , type: 'PUT'
+                , data: $('#myform').serialize()
+                , success: function (rep) {
+                    console.log(rep);
+                    buildPage();
+                }
+            })
+                $('.editBtn').hide();
+                $('input[name="id"]').val('');
+                $('input[name="id"]').hide();
+            })
+            document.getElementsByClassName('btn')[0].addEventListener('click', function () {
+                var username = document.getElementsByName('username').value;
+                var password = document.getElementsByName('password').value;
+                $.post('/users', $('#myform').serialize()).done(function (data) {
+                    console.log(data);
+                    buildPage();
+                })
+            })
+            function buildPage() {
+                $('#usersList').html(' ');
+                $.getJSON('/users', function (data) {
+                    $.each(data.users, function (i, value) {
+                        var profileLink = '<a href="/users/' + value.id + '" target="_blank">' + 'See Profile' + '</a>';
+                        var delete_profile = '<span class="delete_profile">Delete</span>';
+                        var edit_profile = '<span class="edit_profile">Edit</span>';
+                        var newList = $('<tr>' + '<td>' + value.username + '</td>' + '<td>' + value.password + '</td>' + '<td>' + profileLink +
+                            '</td>' + '<td>' + delete_profile + '</td>' + '<td>' + edit_profile + '</td>' + '</tr>');
+                        var stringValue = encodeURIComponent(JSON.stringify(value));
+                        newList.attr('user', stringValue);
+                        $('#usersList').append(newList);
+                        // console.log(value);
+                    })
+                })
+            }    
+        </script>
+    </body>
+
+    </html>
