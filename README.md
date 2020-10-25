@@ -1,6 +1,6 @@
 the server is running at localhost:3001
 
-the libraries need be installed are:
+the libraries need to be installed are:
 
 1. body-parse:
    Body-parser is the Node.js body parsing middleware. It is responsible for parsing the incoming request bodies in a middleware before you handle it.
